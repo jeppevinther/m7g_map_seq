@@ -14,7 +14,11 @@ Flow of analysis:
 Removal of adapter sequences and quality trimming
 Mapping of reads (Bowtie2)
 Pileup of mapped reads on RNA positions (samtools mpileup)
-Parsing of mpileup files and statistical analysis (getFreq script)
+Parsing of mpileup files and statistical analysis (getFreq2000 script)
+
+Code for the analysis: see the m7G-Map-seq.sh file.
+
+
 
 
 
