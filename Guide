@@ -1,15 +1,24 @@
-This github demonstrates the data analysis associated with the m7G-MaP-seq method.
+Data analysis associated with the m7G-MaP-seq method.
 
 In m7G-MaP-seq, the specific sensitivity of m7G to mild reduction with sodium borohydride (NaBH4) is exploited.
 The reduction leads to formation of RNA abasic sites in the RNA. Reverse transcription with reverse transcriptase records
 the positions of m7G modifications directly as mutations in the cDNA. In parallel, a non-NaBH4-treated sample is prepared.
 The treated and control samples are used used to prepare libraries for sequencing. At least one treated and one control sample
-is required, but m7 detection is improved when replicates are included.
+is required, but m7G detection is improved when replicates are included.
+
+Data analysis.
+The method requires at least two fastq files (control and NaBH4 treated) and a Fasta containing the relevant seqences of the RNAs 
+that are to be analysed for m7G modifications.
+
+Flow of analysis:
+Removal of adapter sequences and quality trimming
+Mapping of reads (Bowtie2)
+Pileup of mapped reads on RNA positions (samtools mpileup)
+Parsing of mpileup files and statistical analysis (getFreq script)
 
 
-The data analysis starts with 
-The resulting data is mapped to a relevant reference using local alignments and high sensitivity settings
-Finally, the mutation rate is calculated, and the corresponding mutation rate obtained in the non-reduced control sample is 
-subtracted to give a mutation rate difference for each position. 
 
-The method requires at least two fastq files (control and NaBH4 treated) and a Fasta.
+
+
+
+
