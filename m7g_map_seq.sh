@@ -50,15 +50,18 @@ R
 source("path/getFreq2000.R")                           #read in the getFreq function
 
 getFreq("path/analysis.mpileup",                       #path to input mpileup file
-                     CC = c(0,0,0,1,1,1),              #definition of the samples control=0 and treated=1
+                     CC = c(0,0,0,1,1,1),              #definition of the samples control=0 and treated=1 (relates to the order of samples in mpileup file)
                      CSVout = "path/analysis_out.txt", #output file
                      minFrac = 0.001,                  #minimum fraction of mutations for analysis to be performed for position
                      minCounts = 1,                    #minimum number of counts for analysis to be performed for position
-                     pvalThres = -1,                   #test all sites even if non-variable
-                     nCores = 50,                      #
-                     nSites = 500,                     #
-                     maxSites = 500000)                #
+                     pvalThres = -1,                   #sets p-val treshold for analysis to be performed for position (-1: all analysed)
+                     nCores = 50,                      #number of computer cores used in analysis (depends on computer used)
+                     nSites = 500,                     #number of positions analysed in parallel
+                     maxSites = 500000)                #number of positions analysed (test the function with small number)
 
+
+#The getFreq function will produce a tab delimited output file that can be read into R
+#For description of the columns in the output, see 
 
 
 
