@@ -4,6 +4,8 @@
 # cutadapt (added to the path) https://cutadapt.readthedocs.io/en/stable/index.html
 # samtools (added to the path) http://www.htslib.org/download/
 # bowtie2 (added to the path) http://bowtie-bio.sourceforge.net/bowtie2/index.shtml
+# getFreq2000.R script (added to the path)
+# R (https://www.r-project.org/)
 # Fastq files from m7G-MaP-Seq experiment
 # Fasta file with the sequences of the RNAs of interest
 
@@ -65,28 +67,32 @@ samtools view -u -S mapped.sam.gz|samtools sort > sorted.bam
 
 # prepare a file listing the the path/filenames of the indexes relevant for the analysis
 # Bam list example: index 1, 2, 3 are controls and index 4, 5, 6 are treated
+mkdir data/output
+cd data/output
 
 echo "" > bam_file.txt
 for i in {1..6}
 do
-echo "$i"/sorted.bam >> bam_file.txt
+echo /data/"$i"/sorted.bam >> bam_file.txt
 done
 wait
 
-#mpileup using bam list 
-samtools mpileup -A -d 300000 -f RNA_sequences.fa -b bam_file.txt > analysis.mpileup
 
-cd /binf-isilon/vintherlab/jvinther/070916/scratch/reanalysis150118/BacteriaPlant/bam_files/ara_wt_rrna
+#mpileup using bam list 
+samtools mpileup -A -d 300000 -f /data/fastafile/Coli_rRNA.fa -b bam_file.txt > analysis.mpileup
 
 
 ##############
 #Parsing mpileup file with getFreq Rscript
 #Save the getFreq2000.R file to your system
+
+###
+# start R
 R
 
 source("path/getFreq2000.R")                           #read in the getFreq function
-
-getFreq("path/analysis.mpileup",                       #path to input mpileup file
+setwd("data/output")
+getFreq("analysis.mpileup",                            #path to input mpileup file
                      CC = c(0,0,0,1,1,1),              #definition of the samples control=0 and treated=1 (relates to the order of samples in mpileup file)
                      CSVout = "path/analysis_out.txt", #output file
                      minFrac = 0.001,                  #minimum fraction of mutations for analysis to be performed for position
@@ -97,7 +103,7 @@ getFreq("path/analysis.mpileup",                       #path to input mpileup fi
                      maxSites = 500000)                #number of positions analysed (test the function with small number)
 
 
-#The getFreq function will produce a tab delimited output file that can be read into R
+#The getFreq function will produce a tab delimited output file that can be read into R 
 #For description of the columns in the output, see getFreq2000_output_description.xlsx file
 
 
