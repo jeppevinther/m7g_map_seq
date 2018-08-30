@@ -12,17 +12,41 @@
 # Make directory for analysis
 mkdir directory
 cd /directory
+mkdir data
+cd /data
 
-# If necessary concatenate fastq files from the same index
-cd PATH_TO_FASTQ
-zcat index1_file1.fastq.gz index1_file2.fastq.gz > index1.fastq.gz
+# Put fastq files in the data directory
+# If necessary concatenate fastq files from the same index into one fastq file
+for i in {1..6}
+do
+zcat "$i"_file1.fastq.gz "$i"_file2.fastq.gz > "$i".fastq.gz
+done
+wait
 
-# For example fastq files and E. coli rRNA fasta file use: wget -r http://people.binf.ku.dk/jvinther/data/m7G-seq-map/data
+# To download example fastq files and E. coli rRNA fasta file use: wget -r http://people.binf.ku.dk/jvinther/data/m7G-seq-map/data
 
 
 # Remove adapters (depends on the method used for library preparation, here standard Illumina adapter)
 # For NextSeq sequencing use --nextseq-trim=20
+for i in {1..6}
+do
+mkdir data/$i
+cd /data/$i
+zcat /data/"$i".fastq.gz | cutadapt -a AGATCGGAAGAGCACACGTCT --nextseq-trim=20 - 2> cutadapt.error | gzip > reads_trimmed.fastq.gz &
+done
+wait
+
 cutadapt -a AGATCGGAAGAGCACACGTCT --nextseq-trim=20 index1.fastq.gz 2> index1.cutadapt.error | gzip > index1_trimmed.fastq.gz
+
+for i in {1..6}
+do
+mkdir data/$i
+cd /data/$i
+zcat /data/"$i".fastq.gz | cutadapt -a AGATCGGAAGAGCACACGTCT --nextseq-trim=20  --minimum-length=40 - 2> cutadapt.error | gzip > reads_trimmed.fastq.gz &
+done
+wait
+
+
 
 ##############
 # Mapping (single end data)
