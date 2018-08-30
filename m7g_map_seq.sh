@@ -19,8 +19,11 @@
 # Make directory for analysis
 mkdir directory
 cd /directory
+#Put the path to the directory in $path
+path=PATH_TO_THE_DIRECTORY
+path=/binf-isilon/vintherlab/jvinther/test/
 mkdir data
-cd /data
+cd data
 
 # Put fastq files in the data directory
 # If necessary concatenate fastq files from the same index into one fastq file
@@ -37,11 +40,13 @@ wget -nH --cut-dirs=3 -r --no-parent --reject "index.html*" -e robots=off http:/
 # For NextSeq sequencing use --nextseq-trim=20
 for i in {1..6}
 do
-mkdir data/$i
-cd /data/$i
-zcat /data/"$i".fastq.gz | cutadapt -a AGATCGGAAGAGCACACGTCT --nextseq-trim=20 - 2> cutadapt.error | gzip > reads_trimmed.fastq.gz &
+cd $path/data
+mkdir $i
+cd $i
+zcat $path/data/"$i".fastq.gz | cutadapt -a AGATCGGAAGAGCACACGTCT --nextseq-trim=20 - 2> cutadapt.error | gzip > reads_trimmed.fastq.gz
 done
 wait
+
 
 ##############
 # For the example data a 7 base barcode is present in the adapter used for 3' cDNA ligation
