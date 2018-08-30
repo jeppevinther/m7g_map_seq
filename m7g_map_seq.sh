@@ -157,8 +157,8 @@ samtools mpileup -A -d 300000 -f $path/data/fastafile/Coli_rRNA.fa -b bam_file.t
 R
 
 source("path/getFreq2000.R")                           #read in the getFreq function
-path <- "PATH_TO_THE_DIRECTORY" # path <- "/binf-isilon/vintherlab/jvinther/test/"
-setwd(paste(path,"data/output", sep=""))
+path <- "PATH_TO_THE_DIRECTORY" #REMOVE path <- "/binf-isilon/vintherlab/jvinther/test/"
+setwd(paste(path,"/data/output", sep=""))
 getFreq("analysis.mpileup",                            #path to input mpileup file
                      CC = c(0,0,0,1,1,1),              #definition of the samples control=0 and treated=1 (relates to the order of samples in mpileup file)
                      CSVout = "analysis_out.txt",      #output file
