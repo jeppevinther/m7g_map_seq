@@ -36,40 +36,40 @@ zcat /data/"$i".fastq.gz | cutadapt -a AGATCGGAAGAGCACACGTCT --nextseq-trim=20 -
 done
 wait
 
-cutadapt -a AGATCGGAAGAGCACACGTCT --nextseq-trim=20 index1.fastq.gz 2> index1.cutadapt.error | gzip > index1_trimmed.fastq.gz
-
-for i in {1..6}
-do
-mkdir data/$i
-cd /data/$i
-zcat /data/"$i".fastq.gz | cutadapt -a AGATCGGAAGAGCACACGTCT --nextseq-trim=20  --minimum-length=40 - 2> cutadapt.error | gzip > reads_trimmed.fastq.gz &
-done
-wait
-
-
-
 ##############
 # Mapping (single end data)
 
-# Make bowtie2 index file from Fasta file containing the sequences to be analysed
-bowtie2-build RNA_sequences.fa RNA_sequences
+# 
+#Make bowtie2 index file from Fasta file containing the sequences to be analysed
+cd /data/fastafile
+bowtie2-build Coli_rRNA.fa Coli_rRNA
 
 # High sensitivity mapping with bowtie2 (single read)
-# Local alignment with shortend seed that allows for mismatches, reseeding
-bowtie2 --local -N 1 -D 20 -R 3 -L 15 -x RNA_sequences -U index1_trimmed.fastq.gz 2>index1_bowtie2.error | gzip > index1_mapped.sam.gz
+# Local alignment with shortend seed that allows for a mismatch, increased number of seed extension attempts and reseeding.
+for i in {1..6}
+do
+cd /data/"$i"
+bowtie2 --local -N 1 -D 20 -R 3 -L 15 -x Coli_rRNA -U reads_trimmed.fastq.gz 2>bowtie2.error | gzip > mapped.sam.gz
+done
+wait
+
 
 ##############
 # Pileup of mapped reads using mpileup
 
 # Sorting and making bams, necessary for input into mpileup
-samtools view -u -S index1_mapped.sam.gz|samtools sort > index1.bam
+for i in {1..6}
+do
+cd /data/"$i"
+samtools view -u -S mapped.sam.gz|samtools sort > sorted.bam
 
 # prepare a file listing the the path/filenames of the indexes relevant for the analysis
 # Bam list example: index 1, 2, 3 are controls and index 4, 5, 6 are treated
+
 echo "" > bam_file.txt
-for lab_number in 1 2 3 4 5 6
+for i in {1..6}
 do
-echo path/index"$lab_number".bam >> bam_file.txt
+echo "$i"/sorted.bam >> bam_file.txt
 done
 wait
 
