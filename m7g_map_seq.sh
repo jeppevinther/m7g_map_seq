@@ -1,34 +1,47 @@
-#General m7G-MaP-seq data analysis pipeline
+# General m7G-MaP-seq data analysis pipeline (single end sequencing)
+
+#### Requirements
+# cutadapt (added to the path) https://cutadapt.readthedocs.io/en/stable/index.html
+# samtools (added to the path) http://www.htslib.org/download/
+# bowtie2 (added to the path) http://bowtie-bio.sourceforge.net/bowtie2/index.shtml
+# Fastq files from m7G-MaP-Seq experiment
+# Fasta file with the sequences of the RNAs of interest
 
 ##############
-#Preparation for mapping (single end data)
+# Preparation for mapping 
+# Make directory for analysis
+mkdir directory
+cd /directory
 
-#If necessary concatenate fastq files from the same index
+# If necessary concatenate fastq files from the same index
+cd PATH_TO_FASTQ
 zcat index1_file1.fastq.gz index1_file2.fastq.gz > index1.fastq.gz
 
-#Remove adapters (depends on the method used for library preparation, here standard Illumina adapter)
-#We have used cutadapt, but other tools such as Trimmomatic can also be used 
-#For NextSeq sequencing use --nextseq-trim=20
+# For example fastq files and E. coli rRNA fasta file use: wget -r http://people.binf.ku.dk/jvinther/data/m7G-seq-map/data
+
+
+# Remove adapters (depends on the method used for library preparation, here standard Illumina adapter)
+# For NextSeq sequencing use --nextseq-trim=20
 cutadapt -a AGATCGGAAGAGCACACGTCT --nextseq-trim=20 index1.fastq.gz 2> index1.cutadapt.error | gzip > index1_trimmed.fastq.gz
 
 ##############
-#Mapping (single end data)
+# Mapping (single end data)
 
-#Make bowtie2 index file from Fasta file containing the sequences to be analysed
+# Make bowtie2 index file from Fasta file containing the sequences to be analysed
 bowtie2-build RNA_sequences.fa RNA_sequences
 
-#High sensitivity mapping with bowtie2 (single read)
-#Local alignment with shortend seed that allows for mismatches, reseeding
+# High sensitivity mapping with bowtie2 (single read)
+# Local alignment with shortend seed that allows for mismatches, reseeding
 bowtie2 --local -N 1 -D 20 -R 3 -L 15 -x RNA_sequences -U index1_trimmed.fastq.gz 2>index1_bowtie2.error | gzip > index1_mapped.sam.gz
 
 ##############
-#Pileup of mapped reads using mpileup
+# Pileup of mapped reads using mpileup
 
-#Sorting and making bams, necessary for input into mpileup
+# Sorting and making bams, necessary for input into mpileup
 samtools view -u -S index1_mapped.sam.gz|samtools sort > index1.bam
 
-#prepare a file listing the the path/filenames of the indexes relevant for the analysis
-#Bam list example: index 1, 2, 3 are controls and index 4, 5, 6 are treated
+# prepare a file listing the the path/filenames of the indexes relevant for the analysis
+# Bam list example: index 1, 2, 3 are controls and index 4, 5, 6 are treated
 echo "" > bam_file.txt
 for lab_number in 1 2 3 4 5 6
 do
