@@ -61,7 +61,7 @@ getFreq("path/analysis.mpileup",                       #path to input mpileup fi
 
 
 #The getFreq function will produce a tab delimited output file that can be read into R
-#For description of the columns in the output, see 
+#For description of the columns in the output, see getFreq2000_output_description.xlsx file
 
 
 
