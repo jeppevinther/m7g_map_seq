@@ -52,7 +52,7 @@ for i in {1..6}
 do
 cd /data/$i
 mkdir output_dir
-mv reads_trimmed.fastq.gz /data/$i/output_dir/read1.fastq
+mv reads_trimmed.fastq.gz /data/$i/output_dir/read1.fastq.gz
 done
 wait
 
@@ -140,7 +140,7 @@ wait
 
 
 
-#mpileup using bam list 
+#mpileup using bam list, use the same fasta file which were used for mapping
 samtools mpileup -A -d 300000 -f /data/fastafile/Coli_rRNA.fa -b bam_file.txt > analysis.mpileup
 
 
