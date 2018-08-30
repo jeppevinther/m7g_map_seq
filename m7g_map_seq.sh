@@ -9,9 +9,10 @@
 # Fastq files from m7G-MaP-Seq experiment
 # Fasta file with the sequences of the RNAs of interest
 
-#### Optional
+#### Optional (Use only if you have a barcode in your sequencing library)
 # Preprocessing script from RNAprobR, which can be found here: https://github.com/lkie/RNAprobBash 
 # (also contain guide for downloading and using RNAprobr including preprocessing script)
+# Collapse script, which can be found here http://people.binf.ku.dk/jvinther/data/RNA-seq/collapse.sh
 
 ##############
 # Preparation for mapping 
@@ -55,7 +56,7 @@ mv reads_trimmed.fastq.gz /data/$i/output_dir/read1.fastq
 done
 wait
 
-# Preprocessing for library with barcode
+# OPTIONAL: Preprocessing for library with barcode
 PATH=$PATH:/path/to/RNAprobr/scripts # set the path to the scripts
 for i in {1..6} 
 do
@@ -82,6 +83,31 @@ bowtie2 --local -N 1 -D 20 -R 3 -L 15 -x Coli_rRNA -U reads_trimmed.fastq.gz 2>b
 done
 wait
 
+############
+# OPTIONAL: if your library has barcode and was processed with the preprocessing script, the reads can be collapsed on
+# barcodes to remove PCR duplicates from the analysis. If your library does not have barcodes skip the step below.
+
+#remove barcodes containing N
+for i in {1..6}
+do
+cd /data/"$i"/output_dir
+grep -P '^.*\t[^N]{7}' barcodes.txt > barcodes_filtered.txt
+done
+wait
+
+#Collapse reads on the barcodes, script will remove reads that map to the same RNA position and have identical barcode
+for i in {1..6}
+do
+cd /data/"$i"/output_dir
+collapse.sh /data/"$i"/mapped.sam.gz barcodes_filtered.txt > mapped.sam.gz 
+echo $lab_number
+done
+
+
+
+
+
+
 
 ##############
 # Pileup of mapped reads using mpileup
@@ -103,6 +129,7 @@ do
 echo /data/"$i"/sorted.bam >> bam_file.txt
 done
 wait
+
 
 
 #mpileup using bam list 
