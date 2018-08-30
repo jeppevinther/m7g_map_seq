@@ -31,7 +31,7 @@ wait
 
 # To download example fastq files and E. coli rRNA fasta file use: wget -r http://people.binf.ku.dk/jvinther/data/m7G-seq-map/data
 ###TODO transfer colifastq files from /binf-isilon/vintherlab/jvinther/171120/HY3VNBGX3_casava_1_mismatches/N127
-###Index index 4,5,6 (treated), index 10,11,12 (control), check!!
+###Index index 4,5,6 (treated), index 10,11,12 (control), check download!! Not working??
 
 # Remove adapters (depends on the method used for library preparation, here standard Illumina adapter)
 # For NextSeq sequencing use --nextseq-trim=20
@@ -69,7 +69,6 @@ wait
 ##############
 # Mapping (single end data)
 
-# 
 #Make bowtie2 index file from Fasta file containing the sequences to be analysed
 cd /data/fastafile
 bowtie2-build Coli_rRNA.fa Coli_rRNA
