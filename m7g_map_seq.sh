@@ -21,7 +21,7 @@ mkdir directory
 cd /directory
 #Put the path to the directory in $path
 path=PATH_TO_THE_DIRECTORY
-path=/binf-isilon/vintherlab/jvinther/test/
+#REMOVE: path=/binf-isilon/vintherlab/jvinther/test/
 mkdir data
 cd data
 
@@ -54,17 +54,18 @@ wait
 # do this command instead:
 for i in {1..6}
 do
-cd /data/$i
+cd $path/data/$i 
 mkdir output_dir
-mv reads_trimmed.fastq.gz /data/$i/output_dir/read1.fastq.gz
+mv reads_trimmed.fastq.gz $path/data/$i/output_dir/read1.fastq.gz
 done
 wait
 
 # OPTIONAL: Preprocessing for library with barcode
+#REMOVE..PATH=$PATH:/home/jvinther/scripts/RNAprobBash_scripts
 PATH=$PATH:/path/to/RNAprobr/scripts # set the path to the scripts
 for i in {1..6} 
 do
-cd /data/"$i"
+cd $path/data/$i
 preprocessing.sh -b NNNNNNN -t 15 -1 reads_trimmed.fastq.gz 
 gzip ./output_dir/read1.fastq
 done
@@ -75,15 +76,15 @@ wait
 # Mapping (single end data)
 
 #Make bowtie2 index file from Fasta file containing the sequences to be analysed
-cd /data/fastafile
+cd $path/data/fastafile
 bowtie2-build Coli_rRNA.fa Coli_rRNA
 
 # High sensitivity mapping with bowtie2 (single read)
 # Local alignment with shortend seed that allows for a mismatch, increased number of seed extension attempts and reseeding.
 for i in {1..6}
 do
-cd /data/"$i"
-bowtie2 --local -N 1 -D 20 -R 3 -L 15 -x Coli_rRNA -U reads_trimmed.fastq.gz 2>bowtie2.error | gzip > mapped.sam.gz
+cd $path/data/"$i"/output_dir
+bowtie2 --local -N 1 -D 20 -R 3 -L 15 -x $path/data/fastafile/Coli_rRNA -U read1.fastq.gz 2>bowtie2.error | gzip > mapped.sam.gz &
 done
 wait
 
@@ -95,15 +96,15 @@ wait
 
 for i in {1..6}
 do
-cd /data/$i
-mv reads_mapped.sam.gz /data/$i/output_dir/mapped.sam.gz
+cd $path/data/$i/output_dir
+mv mapped.sam.gz $path/data/$i/mapped.sam.gz
 done
 wait
 
 # OPTIONAL: remove barcodes containing N (the step below will cause these reads to be removed from analysis)
 for i in {1..6}
 do
-cd /data/"$i"/output_dir
+cd $path/data/"$i"/output_dir
 grep -P '^.*\t[^N]{7}' barcodes.txt > barcodes_filtered.txt
 done
 wait
@@ -111,13 +112,10 @@ wait
 # OPTIONAL: Collapse reads on the barcodes, script will remove reads that map to the same RNA position and have identical barcode
 for i in {1..6}
 do
-cd /data/"$i"/output_dir
-collapse.sh /data/"$i"/mapped.sam.gz barcodes_filtered.txt > mapped.sam.gz 
+cd $path/data/"$i"/output_dir
+collapse.sh mapped.sam.gz barcodes_filtered.txt > $path/data/"$i"/mapped.sam.gz 
 done
 wait
-
-
-
 
 
 
@@ -127,25 +125,27 @@ wait
 # Sorting and making bams, necessary for input into mpileup
 for i in {1..6}
 do
-cd /data/"$i"/output_dir
+cd $path/data/"$i"
 samtools view -u -S mapped.sam.gz|samtools sort > sorted.bam
+done
+wait
 
 # prepare a file listing the the path/filenames of the indexes relevant for the analysis
 # Bam list example: index 1, 2, 3 are controls and index 4, 5, 6 are treated
-mkdir data/output
-cd data/output
+mkdir $path/data/output
+cd $path/data/output
 
 echo "" > bam_file.txt
 for i in {1..6}
 do
-echo /data/"$i"/output_dir/sorted.bam >> bam_file.txt
+echo $path/data/"$i"/sorted.bam >> bam_file.txt
 done
 wait
 
 
 
 #mpileup using bam list, use the same fasta file which were used for mapping
-samtools mpileup -A -d 300000 -f /data/fastafile/Coli_rRNA.fa -b bam_file.txt > analysis.mpileup
+samtools mpileup -A -d 300000 -f $path/data/fastafile/Coli_rRNA.fa -b bam_file.txt > analysis.mpileup
 
 
 ##############
@@ -157,16 +157,17 @@ samtools mpileup -A -d 300000 -f /data/fastafile/Coli_rRNA.fa -b bam_file.txt > 
 R
 
 source("path/getFreq2000.R")                           #read in the getFreq function
-setwd("data/output")
+path <- "PATH_TO_THE_DIRECTORY" # path <- "/binf-isilon/vintherlab/jvinther/test/"
+setwd(paste(path,"data/output", sep=""))
 getFreq("analysis.mpileup",                            #path to input mpileup file
                      CC = c(0,0,0,1,1,1),              #definition of the samples control=0 and treated=1 (relates to the order of samples in mpileup file)
-                     CSVout = "path/analysis_out.txt", #output file
+                     CSVout = "analysis_out.txt",      #output file
                      minFrac = 0.001,                  #minimum fraction of mutations for analysis to be performed for position
                      minCounts = 1,                    #minimum number of counts for analysis to be performed for position
                      pvalThres = -1,                   #sets p-val treshold for analysis to be performed for position (-1: all analysed)
                      nCores = 50,                      #number of computer cores used in analysis (depends on computer used)
                      nSites = 500,                     #number of positions analysed in parallel
-                     maxSites = 500000)                #number of positions analysed (test the function with small number)
+                     maxSites = 50000000)              #number of positions analysed (test the function with small number)
 
 
 #The getFreq function will produce a tab delimited output file that can be read into R 
