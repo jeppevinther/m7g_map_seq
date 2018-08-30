@@ -85,9 +85,18 @@ wait
 
 ############
 # OPTIONAL: if your library has barcode and was processed with the preprocessing script, the reads can be collapsed on
-# barcodes to remove PCR duplicates from the analysis. If your library does not have barcodes skip the step below.
+# barcodes to remove PCR duplicates from the analysis. 
+# If you do not have a barcode in your sequencing library, you should skip the Collapse step below and 
+# do this command instead:
 
-#remove barcodes containing N
+for i in {1..6}
+do
+cd /data/$i
+mv reads_mapped.sam.gz /data/$i/output_dir/mapped.sam.gz
+done
+wait
+
+# OPTIONAL: remove barcodes containing N (the step below will cause these reads to be removed from analysis)
 for i in {1..6}
 do
 cd /data/"$i"/output_dir
@@ -95,14 +104,13 @@ grep -P '^.*\t[^N]{7}' barcodes.txt > barcodes_filtered.txt
 done
 wait
 
-#Collapse reads on the barcodes, script will remove reads that map to the same RNA position and have identical barcode
+# OPTIONAL: Collapse reads on the barcodes, script will remove reads that map to the same RNA position and have identical barcode
 for i in {1..6}
 do
 cd /data/"$i"/output_dir
 collapse.sh /data/"$i"/mapped.sam.gz barcodes_filtered.txt > mapped.sam.gz 
-echo $lab_number
 done
-
+wait
 
 
 
@@ -115,7 +123,7 @@ done
 # Sorting and making bams, necessary for input into mpileup
 for i in {1..6}
 do
-cd /data/"$i"
+cd /data/"$i"/output_dir
 samtools view -u -S mapped.sam.gz|samtools sort > sorted.bam
 
 # prepare a file listing the the path/filenames of the indexes relevant for the analysis
@@ -126,7 +134,7 @@ cd data/output
 echo "" > bam_file.txt
 for i in {1..6}
 do
-echo /data/"$i"/sorted.bam >> bam_file.txt
+echo /data/"$i"/output_dir/sorted.bam >> bam_file.txt
 done
 wait
 
