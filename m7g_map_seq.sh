@@ -9,6 +9,10 @@
 # Fastq files from m7G-MaP-Seq experiment
 # Fasta file with the sequences of the RNAs of interest
 
+#### Optional
+# Preprocessing script from RNAprobR, which can be found here: https://github.com/lkie/RNAprobBash 
+# (also contain guide for downloading and using RNAprobr including preprocessing script)
+
 ##############
 # Preparation for mapping 
 # Make directory for analysis
@@ -38,6 +42,29 @@ cd /data/$i
 zcat /data/"$i".fastq.gz | cutadapt -a AGATCGGAAGAGCACACGTCT --nextseq-trim=20 - 2> cutadapt.error | gzip > reads_trimmed.fastq.gz &
 done
 wait
+
+##############
+# For the example data a 7 base barcode is present in the adapter used for 3' cDNA ligation
+# If you do not have a barcode in your sequencing library, you should skip the preprocessing step below and 
+# do this command instead:
+for i in {1..6}
+do
+cd /data/$i
+mkdir output_dir
+mv reads_trimmed.fastq.gz /data/$i/output_dir/read1.fastq
+done
+wait
+
+# Preprocessing for library with barcode
+PATH=$PATH:/path/to/RNAprobr/scripts # set the path to the scripts
+for i in {1..6} 
+do
+cd /data/"$i"
+preprocessing.sh -b NNNNNNN -t 15 -1 reads_trimmed.fastq.gz 
+gzip ./output_dir/read1.fastq
+done
+wait
+
 
 ##############
 # Mapping (single end data)
