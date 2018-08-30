@@ -30,9 +30,8 @@ zcat "$i"_file1.fastq.gz "$i"_file2.fastq.gz > "$i".fastq.gz
 done
 wait
 
-# To download example fastq files and E. coli rRNA fasta file use: wget -r http://people.binf.ku.dk/jvinther/data/m7G-seq-map/data
-###TODO transfer colifastq files from /binf-isilon/vintherlab/jvinther/171120/HY3VNBGX3_casava_1_mismatches/N127
-###Index index 4,5,6 (treated), index 10,11,12 (control), check download!! Not working??
+# To download example fastq files and E. coli rRNA fasta file use: 
+wget -nH --cut-dirs=3 -r --no-parent --reject "index.html*" -e robots=off http://people.binf.ku.dk/jvinther/data/m7G-map-seq/data/
 
 # Remove adapters (depends on the method used for library preparation, here standard Illumina adapter)
 # For NextSeq sequencing use --nextseq-trim=20
